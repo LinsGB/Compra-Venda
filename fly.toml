@@ -1,0 +1,19 @@
+# Fly.io config for the stock alert bot.
+# It's a background worker: no HTTP service, no public ports.
+
+app = "alarm-actions"     # must be unique on Fly.io; change if taken
+primary_region = "gru"    # São Paulo
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  TZ = "America/Sao_Paulo"
+
+# Keep the scheduler running; restart it if it ever crashes
+[[restart]]
+  policy = "always"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"        # a full check uses ~110 MB
