@@ -15,5 +15,8 @@ COPY check_stocks.py list_options.py telegram_notify.py scheduler.py stocks.json
 RUN useradd --create-home bot
 USER bot
 
+# Status / health check endpoint
+EXPOSE 8080
+
 # Runs check_stocks.py --notify every hour, 10:00-18:00, Monday to Friday
 CMD ["python", "scheduler.py"]
