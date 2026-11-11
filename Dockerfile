@@ -9,10 +9,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY check_stocks.py list_options.py telegram_notify.py scheduler.py stocks.json ./
+COPY check_stocks.py list_options.py telegram_notify.py scheduler.py informados.py stocks.json ./
 
-# Run as a non-root user
-RUN useradd --create-home bot
+# Run as a non-root user; it needs to write informados.json in /app
+RUN useradd --create-home bot && chown bot:bot /app
 USER bot
 
 # Status / health check endpoint

@@ -20,6 +20,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import informados
+
 TZ = ZoneInfo("America/Sao_Paulo")
 HOURS = range(10, 19)  # 10:00 to 18:00 (inclusive)
 WEEKDAYS = range(0, 5)  # Monday=0 ... Friday=4
@@ -59,6 +61,8 @@ def next_run(now: datetime) -> datetime:
 def run_check() -> None:
     started = datetime.now(TZ)
     print(f"\n===== {started:%d/%m/%Y %H:%M} — executando check_stocks =====", flush=True)
+    if informados.reset_if_new_day(started.date()):
+        print("🧹 Primeira execução do dia: alertas já informados foram limpos", flush=True)
     # A separate process, so an error in one run never stops the scheduler
     result = subprocess.run([sys.executable, str(SCRIPT), "--notify"])
     status["last_run"] = started.isoformat(timespec="minutes")
