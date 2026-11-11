@@ -1,4 +1,4 @@
 {
-  "BBAS3": { "VENDA": 20 },
-  "CSMG3": { "VENDA": 54 }
+  "BBAS3": { "VENDA": 20, "PREMIO_MINIMO_PCT": 2, "QUANTIDADE": 600 },
+  "CSMG3": { "VENDA": 54, "PREMIO_MINIMO_PCT": 2, "QUANTIDADE": 100 }
 }
