@@ -1,5 +1,5 @@
-"""Run check_stocks.py --notify every hour on the hour, 10:00-18:00,
-Monday to Friday, in São Paulo time.
+"""Run check_stocks.py --notify and acompanhar_opcoes.py --notify every hour
+on the hour, 10:00-18:00, Monday to Friday, in São Paulo time.
 
 Also serves a small status page on PORT (default 8080), used as a health
 check by Fly.io.
@@ -25,7 +25,10 @@ import informados
 TZ = ZoneInfo("America/Sao_Paulo")
 HOURS = range(10, 19)  # 10:00 to 18:00 (inclusive)
 WEEKDAYS = range(0, 5)  # Monday=0 ... Friday=4
-SCRIPT = Path(__file__).parent / "check_stocks.py"
+SCRIPTS = [
+    Path(__file__).parent / "check_stocks.py",  # buy/sell target alerts
+    Path(__file__).parent / "acompanhar_opcoes.py",  # hourly report of your options
+]
 PORT = int(os.getenv("PORT", "8080"))
 
 status = {"started": None, "last_run": None, "last_exit_code": None, "next_run": None}
@@ -60,15 +63,19 @@ def next_run(now: datetime) -> datetime:
 
 def run_check() -> None:
     started = datetime.now(TZ)
-    print(f"\n===== {started:%d/%m/%Y %H:%M} — executando check_stocks =====", flush=True)
+    print(f"\n===== {started:%d/%m/%Y %H:%M} — executando =====", flush=True)
     if informados.reset_if_new_day(started.date()):
         print("🧹 Primeira execução do dia: alertas já informados foram limpos", flush=True)
-    # A separate process, so an error in one run never stops the scheduler
-    result = subprocess.run([sys.executable, str(SCRIPT), "--notify"])
+    exit_codes = {}
+    for script in SCRIPTS:
+        print(f"--- {script.name}", flush=True)
+        # A separate process, so an error in one script never stops the others
+        result = subprocess.run([sys.executable, str(script), "--notify"])
+        exit_codes[script.name] = result.returncode
+        if result.returncode != 0:
+            print(f"⚠️  {script.name} terminou com código {result.returncode}", flush=True)
     status["last_run"] = started.isoformat(timespec="minutes")
-    status["last_exit_code"] = result.returncode
-    if result.returncode != 0:
-        print(f"⚠️  check_stocks terminou com código {result.returncode}", flush=True)
+    status["last_exit_code"] = exit_codes
 
 
 def main() -> None:
